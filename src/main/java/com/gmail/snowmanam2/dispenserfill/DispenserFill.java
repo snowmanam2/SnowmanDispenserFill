@@ -39,119 +39,75 @@ public class DispenserFill extends JavaPlugin {
 			}
 			
 			int radius = config.getInt("maxRadius");
-			boolean auto = true;
-			try {
-				if (args.length > 2) {
-					if (args[1].equalsIgnoreCase("add")) {
-						auto = false;
-					}
+			FillMode fillMode = FillMode.AUTO;
+			
+			if (args.length >= 1) {
+				String mode = args[0].toUpperCase();
+				
+				try {
+					fillMode = FillMode.valueOf(mode);
+				} catch (IllegalArgumentException e) {
+					sender.sendMessage(ChatColor.RED.toString()+"Unrecognized fill mode "+mode);
 					
-					radius = Integer.parseInt(args[2]);
-					getLogger().info(args[1]);
-					getLogger().info(args[2]);
-				} else if (args.length > 1) {
-					radius = Integer.parseInt(args[1]);
-					getLogger().info(args[1]);
+					return true;
 				}
-			} catch (NumberFormatException e) {
-				sender.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
 			}
+			if (args.length >= 2) {
+				try {
+					radius = Math.abs(Integer.parseInt(args[1]));
+				} catch (NumberFormatException e) {
+					sender.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
+					
+					return true;
+				}
+				
+			}
+			
+			
 			
 			radius = Math.min(radius, config.getInt("maxRadius"));
 			
 			Player player = (Player) sender;
-			PlayerInventory inventory = player.getInventory();
+			Inventory playerInventory = player.getInventory();
+			int playerQty = getStacksQuantity(playerInventory.all(Material.TNT));
 			
-			int playerQty = this.getStacksQuantity(inventory.all(Material.TNT));
+			ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
+			int dispenserQty = dispensers.size();
 			
-			Location pos = player.getLocation();
+			int extra = 0;
 			
-			World world = pos.getWorld();
-			
-			int i, j, k;
-			int x, y, z;
-			
-			x = pos.getBlockX();
-			y = pos.getBlockY();
-			z = pos.getBlockZ();
-			
-			ArrayList<Inventory> dispensers = new ArrayList<Inventory>();
-			
-			int dispenserTNTNum = 0;
-			
-			for (i = -radius+x; i < radius+x; i++) {
-				for (j = -radius+y; j < radius+y; j++) {
-					
-					if (j > 255 || j < 0) continue;
-					
-					for (k = -radius+z; k < radius+z; k++) {
-						Block b = world.getBlockAt(i, j, k);						
-						if (b.getType() == Material.DISPENSER) {
-							Dispenser d = (Dispenser) b.getState();
-							Inventory dinv = d.getInventory();
-							dispenserTNTNum += this.getStacksQuantity(dinv.all(Material.TNT));
-							dispensers.add(dinv);
-							
-						}
-					}
-				}
-			}
-			
-			int dispenserNumber = dispensers.size();
-			int totalQty = dispenserTNTNum + playerQty;
-			int qtyEach = totalQty / dispenserNumber;
-			int leftoverQty = totalQty % dispenserNumber;
-			
-			
-			if (totalQty < dispenserNumber) {
-				
-				Iterator<?> itr = dispensers.iterator();
-				
-				for (int n = 0; n < totalQty; n++) {
-					Inventory dinv = (Inventory) itr.next();
-					
-					leftoverQty += this.addItemsToInventory(dinv, Material.TNT, 1);
-				}
-				
-				this.addItemsToInventory(inventory, Material.TNT, leftoverQty);
-				
-				sender.sendMessage(ChatColor.YELLOW.toString()+"Partially filled "+totalQty+" dispensers with "+playerQty+" TNT");
-			} else if (auto) {	
-				inventory.remove(Material.TNT);
-				
-				for (Inventory dinv : dispensers) {
-					dinv.remove(Material.TNT);
-					
-					leftoverQty += this.addItemsToInventory(dinv, Material.TNT, qtyEach);
-				}
-				
-				this.addItemsToInventory(inventory, Material.TNT, leftoverQty);
-				if (playerQty > 0) {
-					sender.sendMessage(ChatColor.GREEN.toString()+"Filled and reorganized " + dispenserNumber+" dispensers with "+playerQty+" TNT.");
+			switch (fillMode) {
+			case AUTO:
+				playerInventory.remove(Material.TNT);
+				extra = fillInventoriesAuto (dispensers, Material.TNT, playerQty);
+				sender.sendMessage(ChatColor.GREEN.toString()+"Filled/reorganized "+dispenserQty+" dispensers with "+playerQty+" TNT");
+				break;
+			case ADD:
+				playerInventory.remove(Material.TNT);
+				extra = fillInventoriesAdd (dispensers, Material.TNT, playerQty);
+				sender.sendMessage(ChatColor.GREEN.toString()+"Added "+playerQty+" total TNT to "+dispenserQty+" dispensers");
+				break;
+			case ADDEQUAL:
+				playerInventory.remove(Material.TNT);
+				extra = fillInventoriesAddEqual (dispensers, Material.TNT, playerQty);
+				sender.sendMessage(ChatColor.GREEN.toString()+"Added "+(playerQty-extra)+" total TNT to "+dispenserQty+" dispensers");
+				break;
+			case FILLALL:
+				if (player.hasPermission("dispenserfill.fillall")) {
+					fillInventoriesFillAll (dispensers, Material.TNT);
+					sender.sendMessage(ChatColor.GREEN.toString()+"Filled "+dispenserQty+" dispensers with TNT");
 				} else {
-					sender.sendMessage(ChatColor.GREEN.toString()+"Reorganized "+ dispenserNumber+" dispensers");
+					sender.sendMessage(ChatColor.RED.toString()+"You don't have permission to use that mode");
+					return true;
 				}
+				break;
 				
-				if (leftoverQty > 0) {
-					sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+leftoverQty+" TNT");
-				}
-			} else {
-				inventory.remove(Material.TNT);
-				
-				qtyEach = playerQty / dispenserNumber;
-				leftoverQty = playerQty % dispenserNumber;
-				
-				for (Inventory dinv : dispensers) {
-					leftoverQty += this.addItemsToInventory(dinv, Material.TNT, qtyEach);
-				}
-				
-				this.addItemsToInventory(inventory, Material.TNT, leftoverQty);
-				
-				sender.sendMessage(ChatColor.GREEN.toString()+"Added " + qtyEach +" TNT to "+dispenserNumber+" dispensers");
-				sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+leftoverQty+" TNT");
 			}
 			
-			
+			if (extra > 0) {
+				addItemsToInventory(playerInventory, Material.TNT, extra);
+				sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+extra+" TNT");
+			}
 			
 			return true;
 		}
@@ -182,6 +138,105 @@ public class DispenserFill extends JavaPlugin {
 		HashMap<Integer, ItemStack> leftover = inv.addItem(new ItemStack(mat, quantity));
 		
 		return this.getStacksQuantity(leftover);
+	}
+	
+	private ArrayList<Inventory> getNearbyDispensers (Player p, int radius) {
+		Location pos = p.getLocation();
+		
+		World world = pos.getWorld();
+		
+		int i, j, k;
+		int x, y, z;
+		
+		x = pos.getBlockX();
+		y = pos.getBlockY();
+		z = pos.getBlockZ();
+		
+		ArrayList<Inventory> dispensers = new ArrayList<Inventory>();
+		
+		for (i = -radius+x; i < radius+x; i++) {
+			for (j = -radius+y; j < radius+y; j++) {
+				
+				if (j > 255 || j < 0) continue;
+				
+				for (k = -radius+z; k < radius+z; k++) {
+					Block b = world.getBlockAt(i, j, k);						
+					if (b.getType() == Material.DISPENSER) {
+						Dispenser d = (Dispenser) b.getState();
+						Inventory dinv = d.getInventory();
+						dispensers.add(dinv);
+						
+					}
+				}
+			}
+		}
+		
+		return dispensers;
+	}
+	
+	private int getInventoriesQty (ArrayList<Inventory> invs, Material mat) {
+		int qty = 0;
+		
+		for (Inventory inv : invs) {
+			qty += getStacksQuantity(inv.all(mat));
+		}
+		
+		return qty;
+	}
+	
+	private int fillInventoriesAuto (ArrayList<Inventory> invs, Material mat, int qty) {
+		int totalQty = qty + getInventoriesQty(invs, mat);
+		
+		int qtyEach = totalQty / invs.size();
+		int remainder = totalQty % invs.size();
+		
+		for (Inventory inv : invs) {
+			inv.remove(mat);
+			remainder += addItemsToInventory (inv, mat, qtyEach);
+		}
+		
+		return remainder;
+	}
+	
+	private int fillInventoriesAddEqual (ArrayList<Inventory> invs, Material mat, int qty) {
+		int qtyEach = qty / invs.size();
+		int remainder = qty % invs.size();
+		
+		for (Inventory inv : invs) {
+			remainder += addItemsToInventory (inv, mat, qtyEach);
+		}
+		
+		return remainder;
+	}
+	
+	private int fillInventoriesAdd (ArrayList<Inventory> invs, Material mat, int qty) {
+		int remainder = fillInventoriesAddEqual(invs, mat, qty);
+		
+		while (remainder > 0 && invs.size() > 0) {
+			Iterator<Inventory> itr = invs.listIterator();
+			while (itr.hasNext() && remainder > 0) {
+				Inventory inv = itr.next();
+				
+				int extra = addItemsToInventory(inv, mat, 1);
+				remainder--;
+				
+				if (extra > 0) {
+					itr.remove();
+				}
+				
+				remainder += extra;
+			}
+		}
+		
+		return remainder;
+	}
+	
+	private void fillInventoriesFillAll (ArrayList<Inventory> invs, Material mat) {
+		int stackSize = mat.getMaxStackSize();
+		
+		for (Inventory inv : invs) {
+			addItemsToInventory (inv, mat, stackSize*inv.getSize());
+		}
 	}
 	
 }

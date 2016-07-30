@@ -1,0 +1,12 @@
+permissions:
+    dispenserfill.*:
+        description: Allows access to all DispenserFill permissions
+        children:
+            dispenserfill.tntfill: true
+            dispenserfill.fillall: true
+    dispenserfill.tntfill:
+        description: Allows access to the tntfill command
+        default: true
+    dispenserfill.fillall:
+        description: Allows filling dispensers without checking inventory
+        default: op
