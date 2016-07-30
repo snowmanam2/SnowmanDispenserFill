@@ -17,7 +17,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DispenserFill extends JavaPlugin {
@@ -63,11 +62,12 @@ public class DispenserFill extends JavaPlugin {
 				
 			}
 			
-			
-			
-			radius = Math.min(radius, config.getInt("maxRadius"));
-			
 			Player player = (Player) sender;
+			
+			if (!player.hasPermission("dispenserfill.overrideradius")) {
+				radius = Math.min(radius, config.getInt("maxRadius"));
+			}
+			
 			Inventory playerInventory = player.getInventory();
 			int playerQty = getStacksQuantity(playerInventory.all(Material.TNT));
 			
@@ -105,8 +105,16 @@ public class DispenserFill extends JavaPlugin {
 			}
 			
 			if (extra > 0) {
-				addItemsToInventory(playerInventory, Material.TNT, extra);
-				sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+extra+" TNT");
+				int overflow = addItemsToInventory(playerInventory, Material.TNT, extra);
+				sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+(extra-overflow)+" TNT");
+				
+				if(overflow > 0) {
+					int lost = fillInventoriesAdd(dispensers, Material.TNT, overflow);
+					sender.sendMessage(ChatColor.DARK_GRAY.toString()+(overflow-lost)+" TNT was recycled into available dispensers");
+					if (lost > 0) {
+						sender.sendMessage(ChatColor.RED.toString()+lost+" TNT was lost!");
+					}
+				}
 			}
 			
 			return true;
@@ -115,6 +123,10 @@ public class DispenserFill extends JavaPlugin {
 		return false;
 	}
 	
+	/* getStacksQuantity
+	 * Returns the total quantity of a list of stacks, as returned by the Bukkit
+	 * Inventory methods.
+	 */
 	@SuppressWarnings("unchecked")
 	private int getStacksQuantity (HashMap<Integer, ? extends ItemStack> stacks) {
 		Iterator<?> itr = stacks.entrySet().iterator();
@@ -131,6 +143,10 @@ public class DispenserFill extends JavaPlugin {
 		return qty;
 	}
 	
+	/* addItemsToInventory
+	 * Wrapper function to attempt to add a quantity of items to an inventory,
+	 * while accounting for zero quantities and excess.
+	 */
 	private int addItemsToInventory (Inventory inv, Material mat, int quantity) {
 
 		if (quantity == 0) return 0;
@@ -174,6 +190,9 @@ public class DispenserFill extends JavaPlugin {
 		return dispensers;
 	}
 	
+	/* getInventoriesQty
+	 * Returns the total amount of a given item in a list of inventories.
+	 */
 	private int getInventoriesQty (ArrayList<Inventory> invs, Material mat) {
 		int qty = 0;
 		
@@ -184,7 +203,16 @@ public class DispenserFill extends JavaPlugin {
 		return qty;
 	}
 	
+	
+	/* Auto Mode:
+	 * Attempts to fill all inventories with the same amount of the item.
+	 * Excess is returned.
+	 */
 	private int fillInventoriesAuto (ArrayList<Inventory> invs, Material mat, int qty) {
+		if (invs.size() == 0) {
+			return qty;
+		}
+		
 		int totalQty = qty + getInventoriesQty(invs, mat);
 		
 		int qtyEach = totalQty / invs.size();
@@ -198,7 +226,16 @@ public class DispenserFill extends JavaPlugin {
 		return remainder;
 	}
 	
+	
+	/* AddEqual Mode:
+	 * Attempts to add all dispensers with an equal amount of the item without
+	 * accounting for the existing quantity. Excess is returned.
+	 */
 	private int fillInventoriesAddEqual (ArrayList<Inventory> invs, Material mat, int qty) {
+		if (invs.size() == 0) {
+			return qty;
+		}
+		
 		int qtyEach = qty / invs.size();
 		int remainder = qty % invs.size();
 		
@@ -209,7 +246,15 @@ public class DispenserFill extends JavaPlugin {
 		return remainder;
 	}
 	
+	/* Add Mode:
+	 * First attempts to add all items as with the AddEqual mode, but then adds all possible
+	 * excess to the inventories. Excess is only returned if no inventories are available.
+	 */
 	private int fillInventoriesAdd (ArrayList<Inventory> invs, Material mat, int qty) {
+		if (invs.size() == 0) {
+			return qty;
+		}
+		
 		int remainder = fillInventoriesAddEqual(invs, mat, qty);
 		
 		while (remainder > 0 && invs.size() > 0) {
@@ -231,11 +276,26 @@ public class DispenserFill extends JavaPlugin {
 		return remainder;
 	}
 	
+	/* FillAll Mode
+	 * Fills all inventories with the maximum amount of the item. Note that this method
+	 * does NOT check for available quantities and is therefore intended only for
+	 * OPs and creative mode.
+	 */
 	private void fillInventoriesFillAll (ArrayList<Inventory> invs, Material mat) {
 		int stackSize = mat.getMaxStackSize();
 		
 		for (Inventory inv : invs) {
 			addItemsToInventory (inv, mat, stackSize*inv.getSize());
+		}
+	}
+	
+	/* clearInventories
+	 * Helper function to clear all inventories. This method wipes the inventories without
+	 * recycling their contents, so it is only intended for OPs and creative mode.
+	 */
+	private void clearInventories (ArrayList<Inventory> invs, Material mat) {
+		for (Inventory inv : invs) {
+			inv.clear();
 		}
 	}
 	
