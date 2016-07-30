@@ -1,0 +1,11 @@
+name: DispenserFill
+main: com.gmail.snowmanam2.dispenserfill.DispenserFill
+version: 0.0.1
+author: snowman_am2
+commands:
+  tntfill:
+    description: Fill dispensers with tnt
+    usage: /tntfill
+    aliases: [filltnt]
+    permission: dispenserfill.tntfill
+    permission-message: You don't have permission to do that. 
