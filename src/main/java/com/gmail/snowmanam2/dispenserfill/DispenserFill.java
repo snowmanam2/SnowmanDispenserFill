@@ -37,90 +37,127 @@ public class DispenserFill extends JavaPlugin {
 				return true;
 			}
 			
-			int radius = config.getInt("maxRadius");
-			FillMode fillMode = FillMode.AUTO;
-			
-			if (args.length >= 1) {
-				String mode = args[0].toUpperCase();
-				
-				try {
-					fillMode = FillMode.valueOf(mode);
-				} catch (IllegalArgumentException e) {
-					sender.sendMessage(ChatColor.RED.toString()+"Unrecognized fill mode "+mode);
-					
-					return true;
-				}
-			}
-			if (args.length >= 2) {
-				try {
-					radius = Math.abs(Integer.parseInt(args[1]));
-				} catch (NumberFormatException e) {
-					sender.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
-					
-					return true;
-				}
-				
-			}
-			
-			Player player = (Player) sender;
-			
-			if (!player.hasPermission("dispenserfill.overrideradius")) {
-				radius = Math.min(radius, config.getInt("maxRadius"));
-			}
-			
-			Inventory playerInventory = player.getInventory();
-			int playerQty = getStacksQuantity(playerInventory.all(Material.TNT));
-			
-			ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
-			int dispenserQty = dispensers.size();
-			
-			int extra = 0;
-			
-			switch (fillMode) {
-			case AUTO:
-				playerInventory.remove(Material.TNT);
-				extra = fillInventoriesAuto (dispensers, Material.TNT, playerQty);
-				sender.sendMessage(ChatColor.GREEN.toString()+"Filled/reorganized "+dispenserQty+" dispensers with "+playerQty+" TNT");
-				break;
-			case ADD:
-				playerInventory.remove(Material.TNT);
-				extra = fillInventoriesAdd (dispensers, Material.TNT, playerQty);
-				sender.sendMessage(ChatColor.GREEN.toString()+"Added "+playerQty+" total TNT to "+dispenserQty+" dispensers");
-				break;
-			case ADDEQUAL:
-				playerInventory.remove(Material.TNT);
-				extra = fillInventoriesAddEqual (dispensers, Material.TNT, playerQty);
-				sender.sendMessage(ChatColor.GREEN.toString()+"Added "+(playerQty-extra)+" total TNT to "+dispenserQty+" dispensers");
-				break;
-			case FILLALL:
-				if (player.hasPermission("dispenserfill.fillall")) {
-					fillInventoriesFillAll (dispensers, Material.TNT);
-					sender.sendMessage(ChatColor.GREEN.toString()+"Filled "+dispenserQty+" dispensers with TNT");
-				} else {
-					sender.sendMessage(ChatColor.RED.toString()+"You don't have permission to use that mode");
-					return true;
-				}
-				break;
-				
-			}
-			
-			if (extra > 0) {
-				int overflow = addItemsToInventory(playerInventory, Material.TNT, extra);
-				sender.sendMessage(ChatColor.GREEN.toString()+"Returned "+(extra-overflow)+" TNT");
-				
-				if(overflow > 0) {
-					int lost = fillInventoriesAdd(dispensers, Material.TNT, overflow);
-					sender.sendMessage(ChatColor.DARK_GRAY.toString()+(overflow-lost)+" TNT was recycled into available dispensers");
-					if (lost > 0) {
-						sender.sendMessage(ChatColor.RED.toString()+lost+" TNT was lost!");
-					}
-				}
-			}
+			fillDispensers ((Player)sender, Material.TNT, args);
 			
 			return true;
+			
+		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("This command can only be run by a player.");
+				return true;
+			}
+			
+			Player p = (Player) sender;
+			
+			ItemStack stack = p.getItemInHand();
+			Material mat = stack.getType();
+			
+			if (mat.equals(Material.AIR)) {
+				sender.sendMessage(ChatColor.RED.toString()+"Put an item in your hand");
+				return true;
+			}
+			
+			fillDispensers (p, mat, args);
+			
+			return true;
+			
+		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {
+			if (!(sender instanceof Player)) {
+				sender.sendMessage("This command can only be run by a player.");
+				return true;
+			}
+			
+			
 		}
 		
+			
+		
 		return false;
+	}
+	
+	private void fillDispensers (Player player, Material mat, String[] args) {
+		int radius = config.getInt("maxRadius");
+		FillMode fillMode = FillMode.AUTO;
+		
+		String itemName = mat.toString().toLowerCase().replaceAll("_", " ");
+		
+		if (args.length >= 1) {
+			String mode = args[0].toUpperCase();
+			
+			try {
+				fillMode = FillMode.valueOf(mode);
+			} catch (IllegalArgumentException e) {
+				player.sendMessage(ChatColor.RED.toString()+"Unrecognized fill mode "+mode);
+				
+				return;
+			}
+		}
+		if (args.length >= 2) {
+			try {
+				radius = Math.abs(Integer.parseInt(args[1]));
+			} catch (NumberFormatException e) {
+				player.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
+				
+				return;
+			}
+			
+		}
+		
+		
+		if (!player.hasPermission("dispenserfill.overrideradius")) {
+			radius = Math.min(radius, config.getInt("maxRadius"));
+		}
+		
+		Inventory playerInventory = player.getInventory();
+		int playerQty = getStacksQuantity(playerInventory.all(mat));
+		
+		ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
+		int dispenserQty = dispensers.size();
+		
+		int extra = 0;
+		
+		switch (fillMode) {
+		case AUTO:
+			playerInventory.remove(mat);
+			extra = fillInventoriesAuto (dispensers, mat, playerQty);
+			player.sendMessage(ChatColor.GREEN.toString()+"Filled/reorganized "+dispenserQty+" dispensers with "+playerQty+" "+itemName);
+			break;
+		case ADD:
+			playerInventory.remove(mat);
+			extra = fillInventoriesAdd (dispensers, mat, playerQty);
+			player.sendMessage(ChatColor.GREEN.toString()+"Added "+playerQty+" total "+itemName+" to "+dispenserQty+" dispensers");
+			break;
+		case ADDEQUAL:
+			playerInventory.remove(mat);
+			extra = fillInventoriesAddEqual (dispensers, mat, playerQty);
+			player.sendMessage(ChatColor.GREEN.toString()+"Added "+(playerQty-extra)+" total "+itemName+" to "+dispenserQty+" dispensers");
+			break;
+		case FILLALL:
+			if (player.hasPermission("dispenserfill.fillall")) {
+				fillInventoriesFillAll (dispensers, mat);
+				player.sendMessage(ChatColor.GREEN.toString()+"Filled "+dispenserQty+" dispensers with "+itemName);
+			} else {
+				player.sendMessage(ChatColor.RED.toString()+"You don't have permission to use that mode");
+				return;
+			}
+			break;
+			
+		}
+		
+		if (extra > 0) {
+			int overflow = addItemsToInventory(playerInventory, mat, extra);
+			player.sendMessage(ChatColor.GREEN.toString()+"Returned "+(extra-overflow)+" "+itemName);
+			
+			if(overflow > 0) {
+				int lost = fillInventoriesAdd(dispensers, mat, overflow);
+				player.sendMessage(ChatColor.DARK_GRAY.toString()+(overflow-lost)+" "+itemName+" was recycled into available dispensers");
+				if (lost > 0) {
+					player.sendMessage(ChatColor.RED.toString()+lost+" "+itemName+" was lost!");
+				}
+			}
+		}
+		
+		return;
 	}
 	
 	/* getStacksQuantity

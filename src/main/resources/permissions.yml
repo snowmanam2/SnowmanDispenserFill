@@ -6,7 +6,7 @@ permissions:
             dispenserfill.fillall: true
             dispenserfill.overrideradius: true
     dispenserfill.tntfill:
-        description: Allows access to the tntfill command
+        description: Access to the tntfill command
         default: true
     dispenserfill.fillall:
         description: Allows filling dispensers without checking inventory
@@ -14,3 +14,9 @@ permissions:
     dispenserfill.overrideradius:
         description: Exceed the maximum fill radius
         default: false
+    dispenserfill.dispenserfill:
+        description: Access to the dispenserfill command
+        default: true
+    dispenserfill.unfillall
+        description: Access to the unfillall command
+        default: op

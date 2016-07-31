@@ -8,4 +8,14 @@ commands:
     usage: /tntfill [auto | add | addequal | fillall] [radius]
     aliases: [filltnt]
     permission: dispenserfill.tntfill
-    permission-message: You don't have permission to do that. 
+    permission-message: You don't have permission to do that.
+  dispenserfill:
+    description: Fill dispensers with the item in hand
+    usage: /dispenserfill [auto | add | addequal | fillall] [radius]
+    aliases: [dispfill, df]
+    permission: dispenerfill.dispenserfill
+    permission-message: You don't have permission to do that.
+  unfillall:
+    description: Unfills all items in dispensers.
+    usage: /unfillall
+    permission: dispenserfill.unfillall
