@@ -3,6 +3,7 @@ package com.gmail.snowmanam2.dispenserfill;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
@@ -71,10 +72,12 @@ public class DispenserFill extends JavaPlugin {
 			Player player = (Player) sender;
 			int radius = config.getInt("maxRadius");
 			
-			ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
+			List<Inventory> dispensers = getNearbyDispensers(player, radius);
 			clearInventories(dispensers);
 			
 			sender.sendMessage(ChatColor.GREEN.toString()+"Cleared "+dispensers.size()+" dispensers");
+			
+			return true;
 		}
 		
 			
@@ -118,7 +121,7 @@ public class DispenserFill extends JavaPlugin {
 		Inventory playerInventory = player.getInventory();
 		int playerQty = getStacksQuantity(playerInventory.all(mat));
 		
-		ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
+		List<Inventory> dispensers = getNearbyDispensers(player, radius);
 		int dispenserQty = dispensers.size();
 		
 		int extra = 0;
@@ -200,7 +203,7 @@ public class DispenserFill extends JavaPlugin {
 		return this.getStacksQuantity(leftover);
 	}
 	
-	private ArrayList<Inventory> getNearbyDispensers (Player p, int radius) {
+	private List<Inventory> getNearbyDispensers (Player p, int radius) {
 		Location pos = p.getLocation();
 		
 		World world = pos.getWorld();
@@ -212,7 +215,7 @@ public class DispenserFill extends JavaPlugin {
 		y = pos.getBlockY();
 		z = pos.getBlockZ();
 		
-		ArrayList<Inventory> dispensers = new ArrayList<Inventory>();
+		List<Inventory> dispensers = new ArrayList<Inventory>();
 		
 		for (i = -radius+x; i < radius+x; i++) {
 			for (j = -radius+y; j < radius+y; j++) {
@@ -237,7 +240,7 @@ public class DispenserFill extends JavaPlugin {
 	/* getInventoriesQty
 	 * Returns the total amount of a given item in a list of inventories.
 	 */
-	private int getInventoriesQty (ArrayList<Inventory> invs, Material mat) {
+	private int getInventoriesQty (List<Inventory> invs, Material mat) {
 		int qty = 0;
 		
 		for (Inventory inv : invs) {
@@ -252,7 +255,7 @@ public class DispenserFill extends JavaPlugin {
 	 * Attempts to fill all inventories with the same amount of the item.
 	 * Excess is returned.
 	 */
-	private int fillInventoriesAuto (ArrayList<Inventory> invs, Material mat, int qty) {
+	private int fillInventoriesAuto (List<Inventory> invs, Material mat, int qty) {
 		if (invs.size() == 0) {
 			return qty;
 		}
@@ -275,7 +278,7 @@ public class DispenserFill extends JavaPlugin {
 	 * Attempts to add all dispensers with an equal amount of the item without
 	 * accounting for the existing quantity. Excess is returned.
 	 */
-	private int fillInventoriesAddEqual (ArrayList<Inventory> invs, Material mat, int qty) {
+	private int fillInventoriesAddEqual (List<Inventory> invs, Material mat, int qty) {
 		if (invs.size() == 0) {
 			return qty;
 		}
@@ -294,7 +297,7 @@ public class DispenserFill extends JavaPlugin {
 	 * First attempts to add all items as with the AddEqual mode, but then adds all possible
 	 * excess to the inventories. Excess is only returned if no inventories are available.
 	 */
-	private int fillInventoriesAdd (ArrayList<Inventory> invs, Material mat, int qty) {
+	private int fillInventoriesAdd (List<Inventory> invs, Material mat, int qty) {
 		if (invs.size() == 0) {
 			return qty;
 		}
@@ -325,7 +328,7 @@ public class DispenserFill extends JavaPlugin {
 	 * does NOT check for available quantities and is therefore intended only for
 	 * OPs and creative mode.
 	 */
-	private void fillInventoriesFillAll (ArrayList<Inventory> invs, Material mat) {
+	private void fillInventoriesFillAll (List<Inventory> invs, Material mat) {
 		int stackSize = mat.getMaxStackSize();
 		
 		for (Inventory inv : invs) {
@@ -337,7 +340,7 @@ public class DispenserFill extends JavaPlugin {
 	 * Helper function to clear all inventories. This method wipes the inventories without
 	 * recycling their contents, so it is only intended for OPs and creative mode.
 	 */
-	private void clearInventories (ArrayList<Inventory> invs) {
+	private void clearInventories (List<Inventory> invs) {
 		for (Inventory inv : invs) {
 			inv.clear();
 		}
