@@ -68,6 +68,13 @@ public class DispenserFill extends JavaPlugin {
 			}
 			
 			
+			Player player = (Player) sender;
+			int radius = config.getInt("maxRadius");
+			
+			ArrayList<Inventory> dispensers = getNearbyDispensers(player, radius);
+			clearInventories(dispensers);
+			
+			sender.sendMessage(ChatColor.GREEN.toString()+"Cleared "+dispensers.size()+" dispensers");
 		}
 		
 			
@@ -330,7 +337,7 @@ public class DispenserFill extends JavaPlugin {
 	 * Helper function to clear all inventories. This method wipes the inventories without
 	 * recycling their contents, so it is only intended for OPs and creative mode.
 	 */
-	private void clearInventories (ArrayList<Inventory> invs, Material mat) {
+	private void clearInventories (ArrayList<Inventory> invs) {
 		for (Inventory inv : invs) {
 			inv.clear();
 		}
