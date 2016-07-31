@@ -17,6 +17,6 @@ permissions:
     dispenserfill.dispenserfill:
         description: Access to the dispenserfill command
         default: true
-    dispenserfill.unfillall
+    dispenserfill.unfillall:
         description: Access to the unfillall command
         default: op
