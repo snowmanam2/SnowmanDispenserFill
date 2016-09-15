@@ -48,6 +48,9 @@ public class InventoryGroup {
 	 * fit in the inventories.
 	 */
 	public int addItemsEqually (ItemType item, int qty) {
+		if (inventories.size() == 0) {
+			return qty;
+		}
 		int remainder = qty % inventories.size();
 		
 		int amountEach = qty / inventories.size();
@@ -66,6 +69,10 @@ public class InventoryGroup {
 	 * Returns the quantity of item that couldn't be added.
 	 */
 	public int addItemsUnequally (ItemType item, int qty) {
+		if (inventories.size() == 0) {
+			return qty;
+		}
+		
 		int remainder = qty;
 		
 		List<InventoryWrapper> temp = new LinkedList<InventoryWrapper> (inventories);

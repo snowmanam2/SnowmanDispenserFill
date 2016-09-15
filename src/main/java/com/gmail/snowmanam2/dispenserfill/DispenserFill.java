@@ -35,9 +35,7 @@ public class DispenserFill extends JavaPlugin {
 			ItemType item = new ItemType(Material.TNT);
 			item.setName("TNT");
 			
-			fillDispensers ((Player)sender, item, args);
-			
-			return true;
+			return fillDispensers ((Player)sender, item, args);
 			
 		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
 			if (!(sender instanceof Player)) {
@@ -55,9 +53,7 @@ public class DispenserFill extends JavaPlugin {
 				return true;
 			}
 			
-			fillDispensers (p, item, args);
-			
-			return true;
+			return fillDispensers (p, item, args);
 			
 		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {
 			if (!(sender instanceof Player)) {
@@ -77,26 +73,33 @@ public class DispenserFill extends JavaPlugin {
 			return true;
 		}
 		
-			
-		
 		return false;
 	}
 	
-	private void fillDispensers (Player player, ItemType item, String[] args) {
+	private boolean fillDispensers (Player player, ItemType item, String[] args) {
 		int radius = config.getInt("maxRadius");
 		FillMode fillMode = FillMode.AUTO;
 		
 		String itemName = item.getName();
 		
+		if (args.length > 2) {
+			player.sendMessage(ChatColor.RED.toString()+"Too many arguments.");
+			return false;
+		}
+		
 		if (args.length >= 1) {
 			String mode = args[0].toUpperCase();
+			
+			if (mode.equalsIgnoreCase("?") || mode.equalsIgnoreCase("help")) {
+				return false;
+			}
 			
 			try {
 				fillMode = FillMode.valueOf(mode);
 			} catch (IllegalArgumentException e) {
 				player.sendMessage(ChatColor.RED.toString()+"Unrecognized fill mode "+mode);
 				
-				return;
+				return false;
 			}
 		}
 		if (args.length >= 2) {
@@ -105,7 +108,7 @@ public class DispenserFill extends JavaPlugin {
 			} catch (NumberFormatException e) {
 				player.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
 				
-				return;
+				return false;
 			}
 		}
 		
@@ -119,6 +122,11 @@ public class DispenserFill extends JavaPlugin {
 		
 		InventoryGroup dispensers = getNearbyDispensers(player, radius);
 		int dispenserQty = dispensers.getSize();
+		
+		if (dispenserQty == 0) {
+			player.sendMessage(ChatColor.RED.toString()+"There are no dispensers nearby to fill.");
+			return true;
+		}
 		
 		int extra = 0;
 		
@@ -144,7 +152,7 @@ public class DispenserFill extends JavaPlugin {
 				player.sendMessage(ChatColor.GREEN.toString()+"Filled "+dispenserQty+" dispensers with "+itemName);
 			} else {
 				player.sendMessage(ChatColor.RED.toString()+"You don't have permission to use that mode");
-				return;
+				return true;
 			}
 			break;
 			
@@ -163,7 +171,7 @@ public class DispenserFill extends JavaPlugin {
 			}
 		}
 		
-		return;
+		return true;
 	}
 
 	private InventoryGroup getNearbyDispensers (Player p, int radius) {
