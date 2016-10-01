@@ -16,12 +16,18 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class DispenserFill extends JavaPlugin {
 	private FileConfiguration config = getConfig();
+	private FillSystem fillSystem;
 	
 	@Override
 	public void onEnable() {
 		config.addDefault("maxRadius", 50);
+		config.addDefault("complexityPerCycle", 5);
+		config.addDefault("taskTickInterval", 5);
+		config.addDefault("fullChunkHeight", false);
 		config.options().copyDefaults(true);
 		saveConfig();
+		
+		fillSystem = new FillSystem(this);
 	}
 	
 	@Override
@@ -35,7 +41,7 @@ public class DispenserFill extends JavaPlugin {
 			ItemType item = new ItemType(Material.TNT);
 			item.setName("TNT");
 			
-			return fillDispensers ((Player)sender, item, args);
+			return fillDispensersCommand ((Player)sender, item, args);
 			
 		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
 			if (!(sender instanceof Player)) {
@@ -53,7 +59,7 @@ public class DispenserFill extends JavaPlugin {
 				return true;
 			}
 			
-			return fillDispensers (p, item, args);
+			return fillDispensersCommand (p, item, args);
 			
 		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {
 			if (!(sender instanceof Player)) {
@@ -65,10 +71,7 @@ public class DispenserFill extends JavaPlugin {
 			Player player = (Player) sender;
 			int radius = config.getInt("maxRadius");
 			
-			InventoryGroup dispensers = getNearbyDispensers(player, radius);
-			dispensers.clearAll();
-			
-			sender.sendMessage(ChatColor.GREEN.toString()+"Cleared "+dispensers.getSize()+" dispensers");
+			fillSystem.clearDispensers(player, radius);
 			
 			return true;
 		}
@@ -76,11 +79,9 @@ public class DispenserFill extends JavaPlugin {
 		return false;
 	}
 	
-	private boolean fillDispensers (Player player, ItemType item, String[] args) {
+	private boolean fillDispensersCommand (Player player, ItemType item, String[] args) {
 		int radius = config.getInt("maxRadius");
 		FillMode fillMode = FillMode.AUTO;
-		
-		String itemName = item.getName();
 		
 		if (args.length > 2) {
 			player.sendMessage(ChatColor.RED.toString()+"Too many arguments.");
@@ -117,94 +118,8 @@ public class DispenserFill extends JavaPlugin {
 			radius = Math.min(radius, config.getInt("maxRadius"));
 		}
 		
-		InventoryWrapper playerInventory = new InventoryWrapper(player.getInventory());
-		int playerQty = playerInventory.getItemAmount(item);
-		
-		InventoryGroup dispensers = getNearbyDispensers(player, radius);
-		int dispenserQty = dispensers.getSize();
-		
-		if (dispenserQty == 0) {
-			player.sendMessage(ChatColor.RED.toString()+"There are no dispensers nearby to fill.");
-			return true;
-		}
-		
-		int extra = 0;
-		
-		switch (fillMode) {
-		case AUTO:
-			playerInventory.removeItem(item);
-			extra = dispensers.fillAuto(item, playerQty);
-			player.sendMessage(ChatColor.GREEN.toString()+"Filled/reorganized "+dispenserQty+" dispensers with "+playerQty+" "+itemName);
-			break;
-		case ADD:
-			playerInventory.removeItem(item);
-			extra = dispensers.fillAdd(item, playerQty);
-			player.sendMessage(ChatColor.GREEN.toString()+"Added "+playerQty+" total "+itemName+" to "+dispenserQty+" dispensers");
-			break;
-		case ADDEQUAL:
-			playerInventory.removeItem(item);
-			extra = dispensers.fillAddEqual(item, playerQty);
-			player.sendMessage(ChatColor.GREEN.toString()+"Added "+(playerQty-extra)+" total "+itemName+" to "+dispenserQty+" dispensers");
-			break;
-		case FILLALL:
-			if (player.hasPermission("dispenserfill.fillall")) {
-				dispensers.fillAll(item);
-				player.sendMessage(ChatColor.GREEN.toString()+"Filled "+dispenserQty+" dispensers with "+itemName);
-			} else {
-				player.sendMessage(ChatColor.RED.toString()+"You don't have permission to use that mode");
-				return true;
-			}
-			break;
-			
-		}
-		
-		if (extra > 0) {
-			int overflow = playerInventory.addItem(item, extra);
-			player.sendMessage(ChatColor.GREEN.toString()+"Returned "+(extra-overflow)+" "+itemName);
-			
-			if(overflow > 0) {
-				int lost = dispensers.fillAdd(item, overflow);
-				player.sendMessage(ChatColor.DARK_GRAY.toString()+(overflow-lost)+" "+itemName+" was recycled into available dispensers");
-				if (lost > 0) {
-					player.sendMessage(ChatColor.RED.toString()+lost+" "+itemName+" was lost!");
-				}
-			}
-		}
-		
+		fillSystem.fillDispensers(player, item, fillMode, radius);
 		return true;
-	}
-
-	private InventoryGroup getNearbyDispensers (Player p, int radius) {
-		InventoryGroup result = new InventoryGroup();
-		
-		Location pos = p.getLocation();
-		
-		World world = pos.getWorld();
-		
-		int i, j, k;
-		int x, y, z;
-		
-		x = pos.getBlockX();
-		y = pos.getBlockY();
-		z = pos.getBlockZ();
-		
-		for (i = -radius+x; i < radius+x; i++) {
-			for (j = -radius+y; j < radius+y; j++) {
-				
-				if (j > 255 || j < 0) continue;
-				
-				for (k = -radius+z; k < radius+z; k++) {
-					Block b = world.getBlockAt(i, j, k);						
-					if (b.getType() == Material.DISPENSER) {
-						Dispenser d = (Dispenser) b.getState();
-						Inventory dinv = d.getInventory();
-						result.addInventory(new InventoryWrapper(dinv));
-					}
-				}
-			}
-		}
-		
-		return result;
 	}
 	
 }

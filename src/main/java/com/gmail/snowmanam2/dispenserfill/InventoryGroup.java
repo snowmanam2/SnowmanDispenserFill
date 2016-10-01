@@ -1,15 +1,14 @@
 package com.gmail.snowmanam2.dispenserfill;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Set;
 
 public class InventoryGroup {
-	List<InventoryWrapper> inventories;
+	Set<InventoryWrapper> inventories;
 	
 	public InventoryGroup () {
-		inventories = new ArrayList<InventoryWrapper>();
+		inventories = new HashSet<InventoryWrapper>();
 	}
 	
 	public void addInventory (InventoryWrapper inv) {
@@ -75,10 +74,10 @@ public class InventoryGroup {
 		
 		int remainder = qty;
 		
-		List<InventoryWrapper> temp = new LinkedList<InventoryWrapper> (inventories);
+		Set<InventoryWrapper> temp = new HashSet<InventoryWrapper> (inventories);
 		
 		while (remainder > 0 && temp.size() > 0) {
-			Iterator<InventoryWrapper> itr = temp.listIterator();
+			Iterator<InventoryWrapper> itr = temp.iterator();
 			while (itr.hasNext() && remainder > 0) {
 				InventoryWrapper inv = itr.next();
 				

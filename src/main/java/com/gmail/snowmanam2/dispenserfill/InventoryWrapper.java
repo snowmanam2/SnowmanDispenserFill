@@ -6,7 +6,10 @@ import java.util.Map;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-/* Workaround wrapper class for Bukkit's inventory system */
+/* Workaround wrapper class for Bukkit's inventory system.
+ * These methods differ from the normal Bukkit methods
+ * because they allow for null inventories
+ * and don't do ItemStack comparisons by quantity */
 
 public class InventoryWrapper {
 	private Inventory inventory;
@@ -17,6 +20,10 @@ public class InventoryWrapper {
 	
 	public int getItemAmount (ItemType item) {
 		int amount = 0;
+		
+		if (inventory == null) {
+			return 0;
+		}
 		
 		for (ItemStack stack : inventory.getContents()) {
 			if (stack != null) {
@@ -30,6 +37,10 @@ public class InventoryWrapper {
 	}
 	
 	public void removeItem (ItemType item) {
+		if (inventory == null) {
+			return;
+		}
+		
 		for (ItemStack stack : inventory.getContents()) {
 			if (stack != null) {
 				if (item.isSimilar(new ItemType(stack))) {
@@ -44,6 +55,10 @@ public class InventoryWrapper {
 			return 0;
 		}
 		
+		if (inventory == null) {
+			return amount;
+		}
+		
 		ItemStack stack = item.toItemStack(amount);
 		
 		Map<Integer, ItemStack> remainder = inventory.addItem(stack);
@@ -52,13 +67,17 @@ public class InventoryWrapper {
 	}
 	
 	public void fillWithItem (ItemType item) {
-		int amount = inventory.getSize() * item.getMaxStackSize();
+		if (inventory != null) {
+			int amount = inventory.getSize() * item.getMaxStackSize();
 		
-		addItem(item, amount);
+			addItem(item, amount);
+		}
 	}
 	
 	public void clear () {
-		inventory.clear();
+		if (inventory != null) {
+			inventory.clear();
+		}
 	}
 	
 	/* getStacksQuantity
