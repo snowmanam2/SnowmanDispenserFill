@@ -20,21 +20,21 @@ public class FillSystem {
 		this.fullChunkHeight = plugin.getConfig().getBoolean("fullChunkHeight");
 		
 		scheduler.scheduleSyncRepeatingTask(plugin, new Runnable() {
-            public void run() {
-            	int operationsPerformed = 0;
-            	FillSystemTask task;
-            	
-                while ((task = taskQueue.peek()) != null) {
-                		operationsPerformed += task.getComplexity();
-                		if (operationsPerformed <= complexityPerCycle) {
-                			task.run();
-                			taskQueue.remove();
-                		} else {
-                			break;
-                		}
-                }
-            }
-        }, 0L, taskTickInterval);
+			public void run() {
+				int operationsPerformed = 0;
+				FillSystemTask task;
+				
+				while ((task = taskQueue.peek()) != null) {
+					operationsPerformed += task.getComplexity();
+						if (operationsPerformed <= complexityPerCycle) {
+							task.run();
+							taskQueue.remove();
+						} else {
+							break;
+						}
+				}
+			}
+		}, 0L, taskTickInterval);
 	}
 	
 	public void fillDispensers (Player p, ItemType item, FillMode mode, int radius) {
