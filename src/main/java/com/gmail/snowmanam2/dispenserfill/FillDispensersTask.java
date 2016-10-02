@@ -17,8 +17,10 @@ public class FillDispensersTask implements FillSystemTask {
 		this.mode = mode;
 	}
 	
-	public int getComplexity() {
-		return 2;
+	public long getComplexity() {
+		
+		/* Rough estimate based on the inventory handling */
+		return 40 * group.getSize();
 	}
 	
 	public void run() {

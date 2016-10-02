@@ -11,11 +11,12 @@ import org.bukkit.scheduler.BukkitScheduler;
 public class FillSystem {
 	private Queue<FillSystemTask> taskQueue;
 	private boolean fullChunkHeight;
+	private final static long complexityBase = 65536;
 	
 	public FillSystem (DispenserFill plugin) {
 		taskQueue = new LinkedList<FillSystemTask>();
 		BukkitScheduler scheduler = plugin.getServer().getScheduler();
-		final int complexityPerCycle = plugin.getConfig().getInt("complexityPerCycle");
+		final long complexityPerCycle = plugin.getConfig().getLong("complexityPerCycle") * complexityBase;
 		final long taskTickInterval = plugin.getConfig().getInt("taskTickInterval");
 		this.fullChunkHeight = plugin.getConfig().getBoolean("fullChunkHeight");
 		
