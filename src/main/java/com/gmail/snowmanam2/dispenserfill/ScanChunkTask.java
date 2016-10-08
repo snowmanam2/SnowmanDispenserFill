@@ -10,8 +10,6 @@ import org.bukkit.inventory.Inventory;
 public class ScanChunkTask implements FillSystemTask {
 	private InventoryGroup group;
 	private Chunk chunk;
-	private Location limit1;
-	private Location limit2;
 	private int minx;
 	private int miny;
 	private int minz;

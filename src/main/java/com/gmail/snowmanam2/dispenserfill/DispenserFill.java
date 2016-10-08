@@ -1,16 +1,11 @@
 package com.gmail.snowmanam2.dispenserfill;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.Dispenser;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -20,6 +15,7 @@ public class DispenserFill extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
+		config = getConfig();
 		config.addDefault("maxRadius", 50);
 		config.addDefault("complexityPerCycle", 5);
 		config.addDefault("taskTickInterval", 5);
