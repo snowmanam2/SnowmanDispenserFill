@@ -1,6 +1,5 @@
 package com.gmail.snowmanam2.dispenserfill;
 
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 public class ClearDispensersTask implements FillSystemTask {
@@ -14,10 +13,10 @@ public class ClearDispensersTask implements FillSystemTask {
 	
 	public void run() {
 		group.clearAll();
-		player.sendMessage(ChatColor.GREEN.toString()+"Cleared "+group.getSize()+" dispensers");
+		player.sendMessage(Messages.get("clear.clearMessage", group.getSize()));
 	}
 
-	public int getComplexity() {
+	public long getComplexity() {
 		return 1;
 	}
 

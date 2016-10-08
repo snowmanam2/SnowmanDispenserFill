@@ -23,6 +23,8 @@ public class DispenserFill extends JavaPlugin {
 		config.options().copyDefaults(true);
 		saveConfig();
 		
+		Messages.loadMessages(this);
+		
 		fillSystem = new FillSystem(this);
 	}
 	
@@ -30,7 +32,7 @@ public class DispenserFill extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
 		if (cmd.getName().equalsIgnoreCase("tntfill")) {
 			if (!(sender instanceof Player)) {
-				sender.sendMessage("This command can only be run by a player.");
+				sender.sendMessage(Messages.get("runPlayerOnly"));
 				return true;
 			}
 			
@@ -41,7 +43,7 @@ public class DispenserFill extends JavaPlugin {
 			
 		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
 			if (!(sender instanceof Player)) {
-				sender.sendMessage("This command can only be run by a player.");
+				sender.sendMessage(Messages.get("runPlayerOnly"));
 				return true;
 			}
 			
@@ -51,7 +53,7 @@ public class DispenserFill extends JavaPlugin {
 			ItemType item = new ItemType(stack);
 			
 			if (item.getMaterial().equals(Material.AIR)) {
-				sender.sendMessage(ChatColor.RED.toString()+"Put an item in your hand");
+				sender.sendMessage(Messages.get("noItemInHand"));
 				return true;
 			}
 			
@@ -59,7 +61,7 @@ public class DispenserFill extends JavaPlugin {
 			
 		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {
 			if (!(sender instanceof Player)) {
-				sender.sendMessage("This command can only be run by a player.");
+				sender.sendMessage(Messages.get("runPlayerOnly"));
 				return true;
 			}
 			
@@ -80,7 +82,7 @@ public class DispenserFill extends JavaPlugin {
 		FillMode fillMode = FillMode.AUTO;
 		
 		if (args.length > 2) {
-			player.sendMessage(ChatColor.RED.toString()+"Too many arguments.");
+			player.sendMessage(Messages.get("tooManyArguments"));
 			return false;
 		}
 		
@@ -94,7 +96,7 @@ public class DispenserFill extends JavaPlugin {
 			try {
 				fillMode = FillMode.valueOf(mode);
 			} catch (IllegalArgumentException e) {
-				player.sendMessage(ChatColor.RED.toString()+"Unrecognized fill mode "+mode);
+				player.sendMessage(Messages.get("unrecognizedMode", mode));
 				
 				return false;
 			}
@@ -103,7 +105,7 @@ public class DispenserFill extends JavaPlugin {
 			try {
 				radius = Math.abs(Integer.parseInt(args[1]));
 			} catch (NumberFormatException e) {
-				player.sendMessage(ChatColor.RED.toString()+"Radius must be a number");
+				player.sendMessage(Messages.get("radiusNotNumeric"));
 				
 				return false;
 			}
