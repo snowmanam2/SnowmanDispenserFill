@@ -44,7 +44,7 @@ public class FillDispensersTask implements FillSystemTask {
 		case AUTO:
 			playerInventory.removeItem(item);
 			extra = group.fillAuto(item, playerQty);
-			player.sendMessage(Messages.get("fill.fillAll", dispenserQty, playerQty, itemName));
+			player.sendMessage(Messages.get("fill.fillAuto", dispenserQty, playerQty, itemName));
 			break;
 		case ADD:
 			playerInventory.removeItem(item);

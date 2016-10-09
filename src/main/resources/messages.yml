@@ -1,19 +1,18 @@
-runPlayerOnly:    "&4This command can only be run by a player."
-tooManyArguments: "&4Too many arguments."
-unrecognizedMode: "&4Unrecognized fill mode {0}"
-radiusNotNumeric: "&4Radius must be a number"
-noItemInHand:     "&4Put an item in your hand"
-
+runPlayerOnly: '&4This command can only be run by a player.'
+tooManyArguments: '&4Too many arguments.'
+unrecognizedMode: '&4Unrecognized fill mode {0}'
+radiusNotNumeric: '&4Radius must be a number'
+noItemInHand: '&4Put an item in your hand'
 fill:
-  noDispensersNearby: "&4There are no dispensers nearby to fill."
-  fillAuto:     "&2Filled/reorganized {0} dispensers with {1} {2}"
-  fillAdd:      "&2Added {2} total {0} to {0} dispensers"
-  fillAddEqual: "&2Added {1} total {2} equally to {0} dispensers"
-  fillAll:      "&Filled {0} dispensers with {1}"
-  noPermission: "&4You don't have permission to use that mode"
-  returnMessage:  "&2Returned {0} {1}"
-  recycleMessage: "&8{0} {1} was recycled into available dispensers"
-  lostMessage:    "&4{0} {1} was lost!"
-  
+  noDispensersNearby: '&4There are no dispensers nearby to fill.'
+  fillAuto:     '&2Filled/reorganized {0} dispensers with {1} {2}'
+  fillAdd:      '&2Added {1} total {2} to {0} dispensers'
+  fillAddEqual: '&2Added {1} total {2} equally to {0} dispensers'
+  fillAll:      '&2Filled {0} dispensers with {1}'
+  noPermission: '&4You don''t have permission to use that mode'
+  returnMessage: '&2Returned {0} {1}'
+  recycleMessage: '&8{0} {1} was recycled into available dispensers'
+  lostMessage: '&4{0} {1} was lost!'
 clear:
-  clearMessage:  "&2Cleared {0} dispensers"
+  clearMessage: '&2Cleared {0} dispensers'
+
