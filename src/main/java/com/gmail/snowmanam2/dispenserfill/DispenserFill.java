@@ -1,6 +1,5 @@
 package com.gmail.snowmanam2.dispenserfill;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
