@@ -6,7 +6,7 @@ commands:
   tntfill:
     description: Fill dispensers with tnt
     usage: /tntfill [auto | add | addequal | fillall] [radius]
-    aliases: [filltnt]
+    aliases: [filltnt, fill]
     permission: dispenserfill.tntfill
     permission-message: You don't have permission to do that.
   dispenserfill:

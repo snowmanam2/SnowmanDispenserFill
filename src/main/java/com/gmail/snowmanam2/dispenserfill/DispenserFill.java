@@ -1,5 +1,6 @@
 package com.gmail.snowmanam2.dispenserfill;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -79,6 +80,10 @@ public class DispenserFill extends JavaPlugin {
 	private boolean fillDispensersCommand (Player player, ItemType item, String[] args) {
 		int radius = config.getInt("maxRadius");
 		FillMode fillMode = FillMode.AUTO;
+		
+		if (player.getGameMode().equals(GameMode.CREATIVE)) {
+			fillMode = FillMode.FILLALL;
+		}
 		
 		if (args.length > 2) {
 			player.sendMessage(Messages.get("tooManyArguments"));
