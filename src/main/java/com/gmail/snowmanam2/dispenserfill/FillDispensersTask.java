@@ -57,13 +57,8 @@ public class FillDispensersTask implements FillSystemTask {
 			player.sendMessage(Messages.get("fill.fillAddEqual", dispenserQty, playerQty, itemName));
 			break;
 		case FILLALL:
-			if (player.hasPermission("dispenserfill.fillall")) {
-				group.fillAll(item);
-				player.sendMessage(Messages.get("fill.fillAll", dispenserQty, itemName));
-			} else {
-				player.sendMessage(Messages.get("fill.noPermission"));
-				return;
-			}
+			group.fillAll(item);
+			player.sendMessage(Messages.get("fill.fillAll", dispenserQty, itemName));
 			break;
 			
 		}

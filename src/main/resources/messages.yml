@@ -1,18 +1,22 @@
-runPlayerOnly: '&4This command can only be run by a player.'
-tooManyArguments: '&4Too many arguments.'
-unrecognizedMode: '&4Unrecognized fill mode {0}'
-radiusNotNumeric: '&4Radius must be a number'
-noItemInHand: '&4Put an item in your hand'
+runPlayerOnly: '&cThis command can only be run by a player.'
+tooManyArguments: '&cToo many arguments.'
+unrecognizedMode: '&cUnrecognized fill mode {0}'
+radiusNotNumeric: '&cRadius must be a number'
+noItemInHand: '&cPut an item in your hand'
+usageFill: |
+           &b Usage: /{0} [auto | add | addequal | fillall] [radius={1}]
+usageClear: |
+            &b Usage: /{0} [radius={1}]
 fill:
-  noDispensersNearby: '&4There are no dispensers nearby to fill.'
-  fillAuto:     '&2Filled/reorganized {0} dispensers with {1} {2}'
-  fillAdd:      '&2Added {1} total {2} to {0} dispensers'
-  fillAddEqual: '&2Added {1} total {2} equally to {0} dispensers'
-  fillAll:      '&2Filled {0} dispensers with {1}'
-  noPermission: '&4You don''t have permission to use that mode'
-  returnMessage: '&2Returned {0} {1}'
+  noDispensersNearby: '&cThere are no dispensers nearby to fill.'
+  fillAuto:     '&aFilled/reorganized {0} dispensers with {1} {2}'
+  fillAdd:      '&aAdded {1} total {2} to {0} dispensers'
+  fillAddEqual: '&aAdded {1} total {2} equally to {0} dispensers'
+  fillAll:      '&aFilled {0} dispensers with {1}'
+  noPermission: '&cYou don''t have permission to use that mode'
+  returnMessage: '&aReturned {0} {1}'
   recycleMessage: '&8{0} {1} was recycled into available dispensers'
-  lostMessage: '&4{0} {1} was lost!'
+  lostMessage: '&c{0} {1} was lost!'
 clear:
-  clearMessage: '&2Cleared {0} dispensers'
+  clearMessage: '&aCleared {0} dispensers'
 

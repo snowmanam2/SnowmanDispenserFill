@@ -20,6 +20,7 @@ public class DispenserFill extends JavaPlugin {
 		config.addDefault("complexityPerCycle", 5);
 		config.addDefault("taskTickInterval", 5);
 		config.addDefault("fullChunkHeight", false);
+		config.addDefault("defaultMode", FillMode.AUTO.toString());
 		config.options().copyDefaults(true);
 		saveConfig();
 		
@@ -30,25 +31,26 @@ public class DispenserFill extends JavaPlugin {
 	
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+		if (!(sender instanceof Player)) {
+			sender.sendMessage(Messages.get("runPlayerOnly"));
+			return true;
+		}
+		
+		Player p = (Player) sender;
+		
 		if (cmd.getName().equalsIgnoreCase("tntfill")) {
-			if (!(sender instanceof Player)) {
-				sender.sendMessage(Messages.get("runPlayerOnly"));
-				return true;
-			}
 			
 			ItemType item = new ItemType(Material.TNT);
 			item.setName("TNT");
 			
-			return fillDispensersCommand ((Player)sender, item, args);
-			
-		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
-			if (!(sender instanceof Player)) {
-				sender.sendMessage(Messages.get("runPlayerOnly"));
-				return true;
+			if (!fillDispensersCommand (p, item, args))
+			{
+				p.sendMessage(Messages.get("usageFill", cmd.getName(), config.get("maxRadius")));
 			}
 			
-			Player p = (Player) sender;
+			return true;
 			
+		} else if (cmd.getName().equalsIgnoreCase("dispenserfill")) {
 			ItemStack stack = p.getItemInHand();
 			ItemType item = new ItemType(stack);
 			
@@ -57,33 +59,43 @@ public class DispenserFill extends JavaPlugin {
 				return true;
 			}
 			
-			return fillDispensersCommand (p, item, args);
-			
-		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {
-			if (!(sender instanceof Player)) {
-				sender.sendMessage(Messages.get("runPlayerOnly"));
-				return true;
+			if (!fillDispensersCommand (p, item, args))
+			{
+				p.sendMessage(Messages.get("usageFill", cmd.getName(), config.get("maxRadius")));
 			}
 			
+			return true;
 			
-			Player player = (Player) sender;
+		} else if (cmd.getName().equalsIgnoreCase("unfillall")) {			
+			
 			int radius = config.getInt("maxRadius");
-			
-			fillSystem.clearDispensers(player, radius);
+			fillSystem.clearDispensers(p, radius);
 			
 			return true;
 		}
 		
-		return false;
+		return true;
+	}
+	
+	private FillMode getDefaultMode (Player player) {
+		FillMode fillMode;
+		
+		try {
+			fillMode = FillMode.valueOf(config.getString("defaultMode").toUpperCase());
+		} catch (IllegalArgumentException e) {
+			fillMode = FillMode.AUTO;
+		}
+		
+		if (player.getGameMode().equals(GameMode.CREATIVE) && player.hasPermission("dispenserfill.fillall")) {
+			fillMode = FillMode.FILLALL;
+		}
+		
+		return fillMode;
 	}
 	
 	private boolean fillDispensersCommand (Player player, ItemType item, String[] args) {
 		int radius = config.getInt("maxRadius");
-		FillMode fillMode = FillMode.AUTO;
-		
-		if (player.getGameMode().equals(GameMode.CREATIVE)) {
-			fillMode = FillMode.FILLALL;
-		}
+		FillMode fillMode = getDefaultMode(player);
 		
 		if (args.length > 2) {
 			player.sendMessage(Messages.get("tooManyArguments"));
@@ -118,6 +130,11 @@ public class DispenserFill extends JavaPlugin {
 		
 		if (!player.hasPermission("dispenserfill.overrideradius")) {
 			radius = Math.min(radius, config.getInt("maxRadius"));
+		}
+		
+		if (!player.hasPermission("dispenserfill.fillall")) {
+			player.sendMessage(Messages.get("fill.noPermission"));
+			return true;
 		}
 		
 		fillSystem.fillDispensers(player, item, fillMode, radius);
