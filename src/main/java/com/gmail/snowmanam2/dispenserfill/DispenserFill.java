@@ -132,7 +132,7 @@ public class DispenserFill extends JavaPlugin {
 			radius = Math.min(radius, config.getInt("maxRadius"));
 		}
 		
-		if (!player.hasPermission("dispenserfill.fillall")) {
+		if (!player.hasPermission("dispenserfill.fillall") && fillMode == FillMode.FILLALL) {
 			player.sendMessage(Messages.get("fill.noPermission"));
 			return true;
 		}
